@@ -55,7 +55,8 @@ end
 
 strquad(q::Function,x1,x2,x3,NP::Int64) = strquad(q,x1,x2,x3,Val(NP))
 
-function normalderivatives(points,normals,topology,Ht,hmag,H0; eps=0.0001, NP=10)
+normalderivatives(points,normals,topology,Ht,hmag,H0; eps=0.0001, NP=10) = normalderivatives(points,normals,topology,Ht,hmag,x->H0; eps=0.0001, NP=10)
+function normalderivatives(points,normals,topology,Ht,hmag,H0::Function; eps=0.0001, NP=100)
 
     ### Tangential field
     for xkey in 1:length(points)
@@ -109,9 +110,12 @@ function normalderivatives(points,normals,topology,Ht,hmag,H0; eps=0.0001, NP=10
             s += strquad((xi,eta) -> qs(xi,eta,xkey,v2,v3,x,nx,Htx),x,points[v2],points[v3],NP)
         end
 
-        Hn[xkey] = dot(H0,nx)/hmag + 1/4/pi * (1-hmag)/hmag * s
+        ### Was there an error?
+        Hn[xkey] = -dot(H0(points[xkey]),nx)/hmag + 1/4/pi * (1-hmag)/hmag * s
     end
 
+#    2*dot(H0,points[:,xkey])/(hmag+1)
+    
     return Hn
 end
 
@@ -157,8 +161,8 @@ function HField(points,normals,topology,psi)
 end
 
 ### Potential simple
-
-function surfacepotential(points,normals,topology,hmag,H0)
+surfacepotential(points,normals,topology,hmag,H0) = surfacepotential(points,normals,topology,hmag,x->dot(H0,x))
+function surfacepotential(points,normals,topology,hmag,ψ::Function)
 
     A = zeros(Float64,length(points),length(points))
     vareas = vertexareas(points,topology)
@@ -182,29 +186,37 @@ function surfacepotential(points,normals,topology,hmag,H0)
 
     B = zeros(Float64,length(points))
     for xkey in 1:length(points)
-        B[xkey] = 2*dot(H0,points[xkey])/(hmag+1)
+        B[xkey] = 2*ψ(points[xkey])/(hmag+1) ### dot(H0,points[xkey]) is actually the potential
+        ### A simple fix would be to make H0 coordinate dependant
+        #2*dot(H0,points[:,xkey])/(hmag+1)
     end
 
+    #psi = (eye(A)*(1- (hmag-1)/(hmag+1)) - 1/2/pi * (hmag-1)/(hmag+1) * (A - diagm(Float64[sum(A[i,:]) for i in 1:size(A,2)]))) \ B
+
     A = A'
-    psi = (eye(A)*(1- (hmag-1)/(hmag+1)) - 1/2/pi * (hmag-1)/(hmag+1) * (A - diagm(Float64[sum(A[i,:]) for i in 1:size(A,2)]))) \ B
+    psi = (eye(A)*(1- (hmag-1)/(hmag+1)) + 1/2/pi * (hmag-1)/(hmag+1) * (A - diagm(Float64[sum(A[i,:]) for i in 1:size(A,2)]))) \ B
     
     return psi
 end
 
 
 ### A method for calculating the field energy
-function fieldenergy(points,normals,topology,psix,mup,H0)
+fieldenergy(points,normals,topology,psix,mup,H0) = fieldenergy(points,normals,topology,psix,mup,x->H0) 
+function fieldenergy(points,normals,topology,psix,mup,H0::Function)
     vareas = vertexareas(points,topology)
     Area = sum(vareas)
 
     s = 0
     for xkey in 1:length(points)
-        s += psix[xkey]*dot(H0,normals[xkey]) * vareas[xkey]
+        s += psix[xkey]*dot(H0(points[xkey]),normals[xkey]) * vareas[xkey]
     end
 
     Em = 1/8/pi * (1 - mup) * s
     return Em
 end
+
+
+
 
 export surfacepotential, tangentderivatives, normalderivatives, fieldenergy
 
