@@ -88,10 +88,8 @@ function normalderivatives(points,normals,topology,Ht,hmag,H0::Function; eps=0.0
             ny = normals[ykey]
             Hty = Ht[ykey]
 
-            #s += dot(nx,-(Hty-Htx)*dot((y-x)/norm(y-x)^3,ny)) * vareas[ykey]
             s += dot(nx,-(Hty-Htx)*dot((y-x)/norm(y-x)^3,ny)) * vareas[ykey]
             s += -dot(nx,cross(Hty-Htx,cross(ny,-(y-x)/norm(y-x)^3))) * vareas[ykey]
-            #s += dot(nx,cross(cross(ny,),-(y-x)/norm(y-x)^3)) * vareas[ykey]
         end
 
         ### Making a proper hole
@@ -110,18 +108,15 @@ function normalderivatives(points,normals,topology,Ht,hmag,H0::Function; eps=0.0
             s += strquad((xi,eta) -> qs(xi,eta,xkey,v2,v3,x,nx,Htx),x,points[v2],points[v3],NP)
         end
 
-        ### Was there an error?
-        Hn[xkey] = -dot(H0(points[xkey]),nx)/hmag + 1/4/pi * (1-hmag)/hmag * s
+        Hn[xkey] = dot(H0(points[xkey]),nx)/hmag + 1/4/pi * (1-hmag)/hmag * s
     end
 
-#    2*dot(H0,points[:,xkey])/(hmag+1)
-    
     return Hn
 end
 
 function tangentderivatives(points,normals,topology,psi)
 
-    H = HField(points,normals,topology,psi)
+    H = HField(points,topology,psi)
     for xkey in 1:length(points)
         nx = normals[xkey]
         H[xkey] = (eye(3) - nx*nx')*H[xkey]
@@ -130,7 +125,7 @@ function tangentderivatives(points,normals,topology,psi)
     return H
 end
 
-function HField(points,normals,topology,psi)
+function HField(points,topology,psi)
 
     H = Array{Point{3,Float64}}(undef,length(points))
 
@@ -152,9 +147,6 @@ function HField(points,normals,topology,psi)
         A = Array(hcat(A...))
         A = transpose(reshape(A,3,div(length(A),3))) ### This looks unecesarry
         H[xkey] = inv(transpose(A)*A)*transpose(A)*B
-        # #H[xkey] = inv(A*A')*A*B
-        # res = (inv(A'*A)*A')'*B
-        # H[xkey] = res
     end
 
     return H
@@ -186,19 +178,14 @@ function surfacepotential(points,normals,topology,hmag,ψ::Function)
 
     B = zeros(Float64,length(points))
     for xkey in 1:length(points)
-        B[xkey] = 2*ψ(points[xkey])/(hmag+1) ### dot(H0,points[xkey]) is actually the potential
-        ### A simple fix would be to make H0 coordinate dependant
-        #2*dot(H0,points[:,xkey])/(hmag+1)
+        B[xkey] = 2*ψ(points[xkey])/(hmag+1) 
     end
 
-    #psi = (eye(A)*(1- (hmag-1)/(hmag+1)) - 1/2/pi * (hmag-1)/(hmag+1) * (A - diagm(Float64[sum(A[i,:]) for i in 1:size(A,2)]))) \ B
-
     A = A'
-    psi = (eye(A)*(1- (hmag-1)/(hmag+1)) + 1/2/pi * (hmag-1)/(hmag+1) * (A - diagm(Float64[sum(A[i,:]) for i in 1:size(A,2)]))) \ B
+    psi = (eye(A)*(1- (hmag-1)/(hmag+1)) - 1/2/pi * (hmag-1)/(hmag+1) * (A - diagm(Float64[sum(A[i,:]) for i in 1:size(A,2)]))) \ B
     
     return psi
 end
-
 
 ### A method for calculating the field energy
 fieldenergy(points,normals,topology,psix,mup,H0) = fieldenergy(points,normals,topology,psix,mup,x->H0) 
@@ -214,8 +201,6 @@ function fieldenergy(points,normals,topology,psix,mup,H0::Function)
     Em = 1/8/pi * (1 - mup) * s
     return Em
 end
-
-
 
 
 export surfacepotential, tangentderivatives, normalderivatives, fieldenergy

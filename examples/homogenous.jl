@@ -1,3 +1,15 @@
+# # Sphere in a homogenous field
+
+# ## Analytics
+
+# To test numerics we can use analytical solution for ellipsoid in a homogenous field.
+# In such case the internal field is given through demagnetization coefficients:
+# ```math
+# H_i = \frac{H_{0i}}{(1 + (\mu-1)n_i)}
+# ```
+
+using QuadGK
+
 function ellipsoid_demagnetization_coefficients(a,b,c)
 
     UP_BOUND = 1000
@@ -23,116 +35,57 @@ function EllipsoidField(a,b,c,mu,H0)
     return [Hix,Hiy,Hiz]
 end
 
+# ## Numerics
 
-using Jacobi
-using Winston
+# First a spherical mesh is loaded from `SoftSurfaceDynamics.jl` package. We also need normals for the mesh for boundary integral equations which crudelly can also be calculated with `SoftSurfaceDynamics.normals` method. However here more sensible approach is to take normal vectors the vertices themselves.
 
-ϵ = 15
-
-### Now I need to do the same thing nummerically
-
-using QuadGK
-using LinearAlgebra
-using GeometryTypes
-using SurfaceTopology
-using SoftSurfaceDynamics # used oly to load meshes
-using LaplaceBIE
+using SoftSurfaceDynamics 
 
 msh = unitsphere(3)
 vertices, faces = msh.vertices, msh.faces
+n = vertices 
+## The question is whether that is because of normal calculation method fault or due to sphere being incorrectly orriented.
 
-n = SoftSurfaceDynamics.normals(vertices,faces) 
 
+# Now we can define our problem with a field $H_0 = e_z$ and $\epsilon=15$. A corresponding potential for that is $\psi = z$ which we need to pass to the solver.
+
+using LaplaceBIE
+using LinearAlgebra
+using GeometryTypes
+using SurfaceTopology
+
+ϵ = 15
 H0 = [0,0,1]
 
 freepotential(x) = dot(x,H0)
 freefield(x) = H0
 
-ψ = surfacepotential(vertices,n,faces,ϵ,freepotential) # H0 could be a coordinate dpeendant function 
+# For finding solution of the problem we execute a line:
+
+ψ = surfacepotential(vertices,n,faces,ϵ,freepotential) 
+
+# which solves a regularized boundary integral equation. And gives the potential on the surface. That then allows to obtain solution everywhere on the space very easally except near the boundary.
+
+# The library offers also to recalculate the pontential gradient on the surface which is needed for example to calculate the surface force due to $(M \cdot \nabla)H$. 
+
+# The tnagential derivatives can be easally claculated from the potential by a finite differences which can be executed.
 P∇ψ = tangentderivatives(vertices,n,faces,ψ)
-n∇ψ = normalderivatives(vertices,n,faces,P∇ψ,ϵ,freefield) # H0 could be a coordinate dpeendant functiOn
 
-# cosθs = [x[3]/1 for x in vertices] ### if one puts point like charge on the z axis
+# The normal derivatives are calculated from Biot-Savarat law treating tangential field as raising from a surface current.
 
-# scatter(cosθs,n∇ψ)
+n∇ψ = normalderivatives(vertices,n,faces,P∇ψ,ϵ,freefield) 
+
+
+# ## Comparission
+
+# Since normals are the same as vertices for the nit spehre we expect normal field and potential to be the same. As can be seen from the results they indeed are:
 
 Hin = EllipsoidField(1,1,1,ϵ,H0)
 
 x = [v[3] for v in vertices]
 sp = sortperm(x)
 
-for xkey in sp #1:length(vertices)
-    Hnt = dot(Hin,vertices[xkey])
+for xkey in sp[1:20:end] 
     psit = dot(Hin,vertices[xkey])
-    Htan = norm(P∇ψ[xkey])
-    Htant = sqrt(norm(Hin)^2-Hnt^2)
-    #println("$(vertices[xkey][3]) $Hnt")
-    #println("$(vertices[xkey][3]) \t $psit \t $(ψ[xkey]) \t $Htant \t $Htant  \t $(n∇ψ[xkey])")
     println("$(vertices[xkey][3]) \t $psit \t $(ψ[xkey]) \t $(n∇ψ[xkey])")
 end
-
-
-
-#cosθ = range(-1,1,length=100)
-#oplot(cosθ, -Hin[3].*cosθ*ϵ)   ### There
-
-
-# normals = Array(Float64,size(points)...)
-# NormalVectors!(normals,points,faces,i->FaceVRing(i,faces))
-
-# for xkey in 1:size(points,2)
-#     x,y,z = points[:,xkey]
-#     gradf = [x/a^2,y/b^2,z/c^2]
-#     nx = gradf/norm(gradf)
-#     normals[:,xkey] = nx
-# end
-
-
-# psit = Array(Float64,size(points,2))
-# Ht = Array(Float64,3,size(points,2))
-# Htheor = EllipsoidField(a,b,c,10,[1,0,0])
-# for xkey in 1:size(points,2)
-#     nx = normals[:,xkey]
-#     psit[xkey] = dot(Htheor,points[:,xkey])
-#     Ht[:,xkey] = Htheor
-# end
-
-# @time Hn = NormalField(points,faces,mup,[1,0,0],regularize=true,normals=normals)
-
-# normals = Array(Float64,size(points)...)
-# NormalVectors!(normals,points,faces,i->FaceVRing(i,faces))
-
-# rarr = Float64[]
-
-# Htheor = EllipsoidField(a,b,c,mup,[1,0,0])
-# for xkey in 1:maximum(faces)
-#     Hnt = dot(Htheor,normals[:,xkey])
-#     r = abs((Hn[xkey] - Hnt)/Hnt)
-#     term = dot([1,0,0],normals[:,xkey])/mup
-#     #importance = abs((Hn[xkey] - term)/term)
-#     importance = abs((Hnt - term)/term)
-#     #integral error
-#     # integrcal = Hn[xkey] - term
-#     # integralther = Ht - term
-#     bigerr = abs((Hn[xkey] - Hnt)/(Hnt - term))
-
-#     push!(rarr,r)
-#     #println("Hn is $(round(Hnt,3)) and computed $(round(Hn[xkey],3)) and r = $(round(r,3)) importance = $(round(importance,3)) ri = $(round(bigerr,3))")
-# end
-
-# println("Average relative error is $(mean(rarr)*100) %")
-
-# ########## Some testing
-
-### All field test 
-
-# @time psi = PotentialSimple(points,faces,10,[1,0,0])
-# @time rpoints, rfaces = subdivision(points,faces; method=:paraboloid)
-# @time Hn = NormalFieldTrapezodial(rpoints,faces,rfaces,10,[1,0,0];NP=3)
-# @time H = HField(points,faces,psi,Hn)
-
-# Htheor = EllipsoidField(a,b,c,10,[1,0,0])
-# for xkey in 1:25:maximum(faces)
-#     r = norm(H[:,xkey] - Htheor)/norm(Htheor)
-#     println("r = $r")
-# end
