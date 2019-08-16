@@ -39,8 +39,7 @@ end
 
 # First a spherical mesh is loaded from `SoftSurfaceDynamics.jl` package. We also need normals for the mesh for boundary integral equations which crudelly can also be calculated with `SoftSurfaceDynamics.normals` method. However here more sensible approach is to take normal vectors the vertices themselves.
 
-using SoftSurfaceDynamics 
-
+include("sphere.jl")
 msh = unitsphere(3)
 vertices, faces = msh.vertices, msh.faces
 n = vertices 

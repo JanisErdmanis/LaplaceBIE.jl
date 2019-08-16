@@ -38,9 +38,9 @@ end
 using LinearAlgebra
 using GeometryTypes
 using SurfaceTopology
-using SoftSurfaceDynamics 
 using LaplaceBIE
 
+include("sphere.jl")
 msh = unitsphere(2)
 vertices, faces = msh.vertices, msh.faces
 n = vertices
