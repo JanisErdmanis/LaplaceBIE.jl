@@ -19,28 +19,14 @@ faces = Face{3,Int64}[
     [4, 9, 10], [5, 10, 6], [3, 5, 12], [7, 3, 11], [9, 7, 8], [10, 9, 2] 
 ]
 
-### Why GeometryTypes normal calculation did not work?
-n = Point{3,Float64}[]
-for v in 1:length(vertices)
-    s = Point(0,0,0)
-    for (v1,v2) in EdgeRing(v,faces)
-        s += cross(vertices[v2],vertices[v1])
-    end
-    normal = s ./ norm(s)
-    push!(n,normal)
-end
-
-# msh = HomogenousMesh(vertices,faces)
+n = vertices ./ norm.(vertices)
 
 hmag = 10.
 H0 = [1.,0,0]
 
-vareas = vertexareas(vertices,faces)
 psi = surfacepotential(vertices,n,faces,hmag,H0)
 P∇ψ = tangentderivatives(vertices,n,faces,psi)
 n∇ψ = normalderivatives(vertices,n,faces,P∇ψ,hmag,H0)
-
-∇ψ = surfacefield(vertices,n,faces,psi,hmag,H0)
 
 energy = fieldenergy(vertices,n,faces,psi,hmag,H0)
 
