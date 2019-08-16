@@ -1,6 +1,6 @@
 before_install:
     - sudo apt-get -qq update
-    - sudo apt-get install -y xorg-dev
+    - sudo apt-get install -y ffmpeg cmake xorg-dev
 
 language: julia
 os:
