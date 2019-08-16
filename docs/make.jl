@@ -8,7 +8,8 @@ Literate.markdown(joinpath(@__DIR__, "../examples/pointlike.jl"), joinpath(@__DI
 
 Literate.markdown(joinpath(@__DIR__, "../examples/mdrop.jl"), joinpath(@__DIR__,"src/"); credit = false, name = "mdrop")
 
-cp(joinpath(@__DIR__,"../examples/sphere.jl"),joinpath(@__DIR__,"src/sphere.jl"))
+Literate.script(joinpath(@__DIR__, "../examples/sphere.jl"), joinpath(@__DIR__,"src/"); credit = false, name = "sphere")
+
 makedocs(sitename="LaplaceBIE.jl",pages = ["index.md","homogenous.md","pointlike.md","mdrop.md"])
 
 deploydocs(
