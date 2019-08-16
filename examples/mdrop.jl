@@ -1,8 +1,17 @@
+# # Magnetic liquid droplet in magnetic field
+
+# Here I present the research code which can be used to reproduce the results in the paper:
+# ```
+# Erdmanis, J. & Kitenbergs, G. & Perzynski, R. & Cebers, A. (2017)
+# Magnetic micro-droplet in rotating field: numerical simulation and comparison with experiment
+# ```
+
 using LinearAlgebra
 using GeometryTypes
 using SurfaceTopology
 using LaplaceBIE
-# using ElTopo
+using Makie
+## using ElTopo
 
 ########### Original code from MDrop #########
 
@@ -51,7 +60,7 @@ function surfacevolume(points,topology)
     return s
 end
 
-function energy(points,normals,faces,psi,mup,H0)
+function energy(points,normals,faces,psi,mup,gammap,H0)
     vareas = vertexareas(points,faces)
     Area = sum(vareas)
 
@@ -107,24 +116,36 @@ include("sphere.jl")
 msh = unitsphere(2)
 vertices, faces = msh.vertices, msh.faces
 
+# Now let's do something fun. Visualize the process with Makie in real time.
+x = Node(msh)
+y = lift(x->x,x)
+
+scene = Scene(show_axis=false)
+
+wireframe!(scene,y,linewidth = 3f0)
+mesh!(scene,y, color = :white, shading = false)
+
+display(scene)
+
 # Initial parameters
-H0 = [1.,0.,0.]
+H0 = [4.,0.,0.]
 etap = 1.
 gammap = 1.
-μ = 2.
+μ = 10.
 
 t = 0.
 Δt = 0.1
+N = 100
 volume0 = surfacevolume(vertices,faces)
 
-for i in 1:10
+record(scene, "mdrop.gif", 1:N) do i # for i in 1:N
     n = normals(vertices,faces) 
 
     psi = surfacepotential(vertices,n,faces,μ,H0)
     P∇ψ = tangentderivatives(vertices,n,faces,psi)
     Hn = normalderivatives(vertices,n,faces,P∇ψ,μ,H0)
 
-    E = energy(vertices,n,faces,psi,μ,H0)
+    E = energy(vertices,n,faces,psi,μ,gammap,H0)
     rV = surfacevolume(vertices,faces)/volume0
     @show E,rV
 
@@ -135,12 +156,17 @@ for i in 1:10
 
     vertices .+= n .* vn * Δt
 
-    global t += Δt
-
-    ### ElTopo stabilization
-    # par = SurfTrack(allow_vertex_movement=true)
-    # msh = stabilize(HomogenousMesh(vertices,faces),par)
+    msh = HomogenousMesh(vertices,faces) 
     
+    ### ElTopo stabilization
+    ## par = SurfTrack(allow_vertex_movement=true)
+    ## msh = stabilize(msh,par)
+
+    push!(x,msh)
+    AbstractPlotting.force_update!()
+
     global vertices, faces = msh.vertices, msh.faces
+    global t += Δt
 end
 
+# ![](mdrop.gif)
