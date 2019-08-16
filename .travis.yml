@@ -1,17 +1,12 @@
 language: julia
 os:
   - linux
-  - osx
-  - windows
 julia:
-  - 1.0
-  - 1.1
   - 1.2
-  - nightly
 jobs:
   include:
     - stage: "Documentation"
-      julia: 1.0
+      julia: 1.2
       os: linux
       script:
         - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd()));
