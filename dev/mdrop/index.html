@@ -102,9 +102,9 @@ function stokesvelocity(points,normals,faces,forcen,etaP,gammap)
         velocityn[xkey] = s
     end
     return velocityn
-end</code></pre><p>Generation of sphere mesh</p><pre><code class="language-">include(&quot;sphere.jl&quot;)
+end</code></pre><p>Generation of sphere mesh</p><pre><code class="language-julia">include(&quot;sphere.jl&quot;)
 msh = unitsphere(2)
-vertices, faces = msh.vertices, msh.faces</code></pre><p>Now let&#39;s do something fun. Visualize the process with Makie in real time.</p><pre><code class="language-">x = Node(msh)
+vertices, faces = msh.vertices, msh.faces</code></pre><pre><code class="language-none">(GeometryTypes.Point{3,Float64}[[-0.5257311121191336, 0.85065080835204, 0.0], [0.5257311121191336, 0.85065080835204, 0.0], [-0.5257311121191336, -0.85065080835204, 0.0], [0.5257311121191336, -0.85065080835204, 0.0], [0.0, -0.5257311121191336, 0.85065080835204], [0.0, 0.5257311121191336, 0.85065080835204], [0.0, -0.5257311121191336, -0.85065080835204], [0.0, 0.5257311121191336, -0.85065080835204], [0.85065080835204, 0.0, -0.5257311121191336], [0.85065080835204, 0.0, 0.5257311121191336]  …  [0.0, -0.2732665289126717, -0.9619383577839176], [0.25989191300775444, 0.4338885645526948, -0.8626684804161862], [0.26286555605956685, 0.16245984811645317, -0.9510565162951536], [0.26286555605956685, -0.16245984811645317, -0.9510565162951536], [0.9619383577839176, 0.0, 0.2732665289126717], [0.9510565162951536, 0.26286555605956685, 0.16245984811645317], [0.8626684804161862, 0.25989191300775444, -0.4338885645526948], [0.9510565162951536, 0.26286555605956685, -0.16245984811645317], [0.6937804775604491, 0.7020464447761631, 0.16062203564002314], [0.8506508083520399, 0.5257311121191337, 0.0]], GeometryTypes.Face{3,Int64}[[1, 43, 49], [13, 44, 43], [14, 49, 44], [44, 49, 43], [12, 45, 69], [23, 48, 45], [13, 69, 48], [48, 69, 45], [6, 46, 79], [14, 47, 46]  …  [35, 128, 160], [160, 128, 159], [2, 161, 99], [42, 162, 161], [27, 99, 162], [162, 99, 161], [27, 162, 160], [42, 158, 162], [35, 160, 158], [158, 160, 162]])</code></pre><p>Now let&#39;s do something fun. Visualize the process with Makie in real time.</p><pre><code class="language-">x = Node(msh)
 y = lift(x-&gt;x,x)
 
 scene = Scene(show_axis=false)
