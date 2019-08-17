@@ -1,20 +1,12 @@
-before_install:
-    - sudo apt-get -qq update
-    - sudo apt-get install -y ffmpeg cmake xorg-dev
-    - sudo apt-get install libglfw3
-    - sudo apt-get install build-essential -y
-    - sudo apt-get install -y cmake mesa-utils
-    - sudo apt-get install -y libxrandr-dev libxinerama-dev libxcursor-dev mesa-utils
-
 language: julia
 os:
   - linux
 julia:
-  - 1.2
+  - 1.1
 jobs:
   include:
     - stage: "Documentation"
-      julia: 1.2
+      julia: 1.1
       os: linux
       script:
         - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd()));
