@@ -17,7 +17,9 @@ jobs:
       julia: 1.1
       os: linux
       script:
-        - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd()));
+        - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+        - if [[ `uname` = "Linux" ]]; then TESTCMD="xvfb-run julia"; else TESTCMD="julia"; fi
+        - $TESTCMD --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd()));
                                                Pkg.instantiate(); Pkg.build("Cairo")'
-        - julia --project=docs/ docs/make.jl
+        - $TESTCMD --project=docs/ docs/make.jl
       after_success: skip
