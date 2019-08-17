@@ -2,3 +2,4 @@ docs/build/
 docs/src/homogenous.md
 docs/src/pointlike.md
 docs/src/mdrop.md
+docs/src/sphere.jl

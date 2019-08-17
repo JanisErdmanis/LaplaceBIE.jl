@@ -10,7 +10,7 @@ using LinearAlgebra
 using GeometryTypes
 using SurfaceTopology
 using LaplaceBIE
-using Makie
+using AbstractPlotting, GLMakie
 ## using ElTopo
 
 ########### Original code from MDrop #########
