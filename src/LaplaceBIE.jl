@@ -21,12 +21,12 @@ function vertexareas(points,topology)
     return vareas
 end
 
-function surfacefield(points,normals,topology,psi,mup,Htime)
-    H = tangentderivatives(points,normals,topology,psi)
-    Hn = normalderivatives(points,normals,topology,H,mup,Htime)
-    H .= Hn .* normals
-    return H
-end    
+# function surfacefield(points,normals,topology,psi,mup,Htime)
+#     H = tangentderivatives(points,normals,topology,psi)
+#     Hn = normalderivatives(points,normals,topology,H,mup,Htime)
+#     H .= Hn .* normals
+#     return H
+# end    
 
 @generated function strquad(q::Function,x1,x2,x3,NP::Val{T}) where T
     t, w = gausslegendre(T)
@@ -56,6 +56,12 @@ end
 strquad(q::Function,x1,x2,x3,NP::Int64) = strquad(q,x1,x2,x3,Val(NP))
 
 normalderivatives(points,normals,topology,Ht,hmag,H0; eps=0.0001, NP=10) = normalderivatives(points,normals,topology,Ht,hmag,x->H0; eps=0.0001, NP=10)
+
+"""
+    normalderivatives(points,normals,topology,P∇ψ,μ,∇ψ0::Function; eps=0.0001, NP=100)
+
+Calculates ∇ψ.n approached to the object surface from interior region. To use the function surface properties `points`, `normals` and `topology` are required. To use the function it is required to have a tangential field components (see `tangentialderivatives` and `surfacepotential`), boundary jump condition μ and a gradient of external free field. 
+"""
 function normalderivatives(points,normals,topology,Ht,hmag,H0::Function; eps=0.0001, NP=100)
 
     ### Tangential field
@@ -114,6 +120,11 @@ function normalderivatives(points,normals,topology,Ht,hmag,H0::Function; eps=0.0
     return Hn
 end
 
+"""
+    tangentderivatives(points,normals,topology,ψ)
+
+Returns tangential derivative P∇ψ for a shape defined by `points`, `normals` and `topology`.
+"""
 function tangentderivatives(points,normals,topology,psi)
 
     H = HField(points,topology,psi)
@@ -154,6 +165,12 @@ end
 
 ### Potential simple
 surfacepotential(points,normals,topology,hmag,H0) = surfacepotential(points,normals,topology,hmag,x->dot(H0,x))
+
+"""
+    surfacepotential(points,normals,topology,μ,ψ0::Function)
+
+Returns a surface field for a given shape defined by a triangular mesh with `points`, `normals` and `topology` and for a boundary conditions where ∇ψ has a jump in th e normal direction charectarized with μ and for the external free field given by a potential ψ0.
+"""
 function surfacepotential(points,normals,topology,hmag,ψ::Function)
 
     A = zeros(Float64,length(points),length(points))
@@ -187,22 +204,22 @@ function surfacepotential(points,normals,topology,hmag,ψ::Function)
     return psi
 end
 
-### A method for calculating the field energy
-fieldenergy(points,normals,topology,psix,mup,H0) = fieldenergy(points,normals,topology,psix,mup,x->H0) 
-function fieldenergy(points,normals,topology,psix,mup,H0::Function)
-    vareas = vertexareas(points,topology)
-    Area = sum(vareas)
+# ### A method for calculating the field energy
+# fieldenergy(points,normals,topology,psix,mup,H0) = fieldenergy(points,normals,topology,psix,mup,x->H0) 
+# function fieldenergy(points,normals,topology,psix,mup,H0::Function)
+#     vareas = vertexareas(points,topology)
+#     Area = sum(vareas)
 
-    s = 0
-    for xkey in 1:length(points)
-        s += psix[xkey]*dot(H0(points[xkey]),normals[xkey]) * vareas[xkey]
-    end
+#     s = 0
+#     for xkey in 1:length(points)
+#         s += psix[xkey]*dot(H0(points[xkey]),normals[xkey]) * vareas[xkey]
+#     end
 
-    Em = 1/8/pi * (1 - mup) * s
-    return Em
-end
+#     Em = 1/8/pi * (1 - mup) * s
+#     return Em
+# end
 
 
-export surfacepotential, tangentderivatives, normalderivatives, fieldenergy
+export surfacepotential, tangentderivatives, normalderivatives #, fieldenergy
 
 end # module

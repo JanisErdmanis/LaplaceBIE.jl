@@ -72,8 +72,14 @@ cosθs = [x[3]/1 for x in vertices]
 
 scatter(cosθs,ψ)
 oplot(cosθ,ψt.(cosθ,ϵ,ζ,r1) )
+savefig("potential.svg")
+
+# ![](potential.svg)
 
 # Test of normal derivatives derivatives
 
 scatter(cosθs,n∇ψ)
 oplot(cosθ,∇ψn.(cosθ,ϵ,ζ,r1) )
+savefig("nderivatives.svg")
+
+# ![](nderivatives.svg)
