@@ -1,7 +1,5 @@
 # LaplaceBIE.jl
 
-Boundary integral equation methods for solving Laplace's equation on the interface.
-
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://akels.github.io/LaplaceBIE.jl/stable)
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://akels.github.io/LaplaceBIE.jl/dev)
 [![Build Status](https://travis-ci.org/akels/LaplaceBIE.jl.svg?branch=master)](https://travis-ci.org/akels/LaplaceBIE.jl)
