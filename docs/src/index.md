@@ -1,6 +1,6 @@
 # Theory and introduction
 
-Since ancient times people had wondered what makes amber rubbed with fur to attract small light objects and what makes lodestones, naturally magnetized pieces of the minereal magnetite, to atract iron. Knowdays we do have an answer that the force comes from magnetization or polarization gradient. However even for a linear materials the computation of the force is a challenge due to secundary field effects. In this article I propose a numerical method for calculating the field at the objects surface and thus also force for a general shapes as long as thoose are smooth.
+Since ancient times people had wondered what makes amber rubbed with fur to attract small light objects and what makes lodestones, naturally magnetized pieces of the minereal magnetite, to atract iron. Nowadays we do have an answer that the force comes from magnetization or polarization gradient. However, even for linear materials, the computation of the force is a challenge due to secondary field effects. Fortunately, boundary integral methods can save our day[^1], which are implemented in this library and can be used to calculate the field and so also a force at an arbitrary object's surface.
 
 To start with we introduce a potential $\psi$ whose gradient is either electric or magnetic field. In absence of singularitities (charges, dipoles and etc.) the potential satisfies Laplace equation $\Delta \psi = 0$ which can also be written in boundary integral form:
 ```math
@@ -79,3 +79,5 @@ The boundary integral equations are solved with collocation metheod on a triangu
 ```@autodocs
  Modules = [LaplaceBIE]
 ```
+
+[^1]: Erdmanis, J. & Kitenbergs, G. & Perzynski, R. & Cebers, A. (2017) Magnetic micro-droplet in rotating field: numerical simulation and comparison with experiment
