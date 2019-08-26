@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Sphere in a homogenous field · LaplaceBIE.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>LaplaceBIE.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Theory and introduction</a></li><li class="current"><a class="toctext" href>Sphere in a homogenous field</a><ul class="internal"><li><a class="toctext" href="#Analytics-1">Analytics</a></li><li><a class="toctext" href="#Numerics-1">Numerics</a></li><li><a class="toctext" href="#Comparission-1">Comparission</a></li></ul></li><li><a class="toctext" href="../pointlike/">Sphere in a point charge field.</a></li><li><a class="toctext" href="../mdrop/">Magnetic liquid droplet in magnetic field</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Sphere in a homogenous field</a></li></ul><a class="edit-page" href="https://github.com/akels/LaplaceBIE.jl/blob/master/examples/homogenous.jl"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Sphere in a homogenous field</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Sphere-in-a-homogenous-field-1" href="#Sphere-in-a-homogenous-field-1">Sphere in a homogenous field</a></h1><h2><a class="nav-anchor" id="Analytics-1" href="#Analytics-1">Analytics</a></h2><p>To test numerics we can use analytical solution for ellipsoid in a homogenous field. In such case the internal field is given through demagnetization coefficients:</p><div>\[H_i = \frac{H_{0i}}{(1 + (\mu-1)n_i)}\]</div><pre><code class="language-julia">using QuadGK
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Sphere in a homogenous field · LaplaceBIE.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>LaplaceBIE.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Theory and introduction</a></li><li class="current"><a class="toctext" href>Sphere in a homogenous field</a><ul class="internal"></ul></li><li><a class="toctext" href="../pointlike/">Sphere in a point charge field.</a></li><li><a class="toctext" href="../mdrop/">Magnetic liquid droplet in magnetic field</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Sphere in a homogenous field</a></li></ul><a class="edit-page" href="https://github.com/akels/LaplaceBIE.jl/blob/master/examples/homogenous.jl"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Sphere in a homogenous field</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Sphere-in-a-homogenous-field-1" href="#Sphere-in-a-homogenous-field-1">Sphere in a homogenous field</a></h1><p>For an three axial ellipsoid in a constant field we have an analytic solution expressed in terms of demagnetization coefficients <span>$n_i$</span>:</p><div>\[H_i = \frac{H_{0i}}{(1 + (\mu-1)n_i)}\]</div><p>whre <span>$\vec H$</span> is the interior field and <span>$\vec H_{0}$</span> is the constant field. That makes ellipsoid a perfect subject to test the numerics.</p><pre><code class="language-julia">using QuadGK
 
 function ellipsoid_demagnetization_coefficients(a,b,c)
 
@@ -24,20 +24,38 @@ function EllipsoidField(a,b,c,mu,H0)
     Hiz = H0z/(1 + (mu-1)*nz)
 
     return [Hix,Hiy,Hiz]
-end</code></pre><pre><code class="language-none">EllipsoidField (generic function with 1 method)</code></pre><h2><a class="nav-anchor" id="Numerics-1" href="#Numerics-1">Numerics</a></h2><p>First a spherical mesh is loaded from <code>SoftSurfaceDynamics.jl</code> package. We also need normals for the mesh for boundary integral equations which crudelly can also be calculated with <code>SoftSurfaceDynamics.normals</code> method. However here more sensible approach is to take normal vectors the vertices themselves.</p><pre><code class="language-julia">include(&quot;sphere.jl&quot;)
-msh = unitsphere(3)
-vertices, faces = msh.vertices, msh.faces
-n = vertices
-# The question is whether that is because of normal calculation method fault or due to sphere being incorrectly orriented.</code></pre><p>Now we can define our problem with a field <span>$H_0 = e_z$</span> and <span>$\epsilon=15$</span>. A corresponding potential for that is <span>$\psi = z$</span> which we need to pass to the solver.</p><pre><code class="language-julia">using LaplaceBIE
+end;</code></pre><pre><code class="language-none">EllipsoidField (generic function with 1 method)</code></pre><p>We define that we have a field of strength <span>$H_0 = e_z$</span>. A corresponding potential for that is <span>$\psi_0 = z$</span>, which we need to pass to the solver.</p><pre><code class="language-julia">using LaplaceBIE
 using LinearAlgebra
-using GeometryTypes
-using SurfaceTopology
 
-ϵ = 15
 H0 = [0,0,1]
 
-freepotential(x) = dot(x,H0)
-freefield(x) = H0</code></pre><pre><code class="language-none">freefield (generic function with 1 method)</code></pre><p>For finding solution of the problem we execute a line:</p><pre><code class="language-julia">ψ = surfacepotential(vertices,n,faces,ϵ,freepotential)</code></pre><pre><code class="language-none">642-element Array{Float64,1}:
+ψ0(x) = dot(x,H0)
+∇ψ0(x) = H0;</code></pre><pre><code class="language-none">∇ψ0 (generic function with 1 method)</code></pre><p>For simplicity we consider a sphere with relative permitivity <span>$\epsilon=15$</span>. The sphere we can generate mesh from subdivisions of icosahedron given in <code>sphere.jl</code>. We also need normal vectors which we get from the vertex positions with high accuracy.</p><pre><code class="language-julia">ϵ = 15
+
+include(&quot;sphere.jl&quot;)
+msh = unitsphere(3)
+vertices, faces = msh.vertices, msh.faces
+n = vertices;</code></pre><pre><code class="language-none">642-element Array{GeometryTypes.Point{3,Float64},1}:
+ [-0.525731, 0.850651, 0.0]      
+ [0.525731, 0.850651, 0.0]       
+ [-0.525731, -0.850651, 0.0]     
+ [0.525731, -0.850651, 0.0]      
+ [0.0, -0.525731, 0.850651]      
+ [0.0, 0.525731, 0.850651]       
+ [0.0, -0.525731, -0.850651]     
+ [0.0, 0.525731, -0.850651]      
+ [0.850651, 0.0, -0.525731]      
+ [0.850651, 0.0, 0.525731]       
+ ⋮                               
+ [0.780204, 0.62024, -0.0811419] 
+ [0.702907, 0.711282, 0.0]       
+ [0.780204, 0.62024, 0.0811419]  
+ [0.840178, 0.519258, -0.156434] 
+ [0.891007, 0.386187, 0.238677]  
+ [0.912982, 0.399607, 0.0823236] 
+ [0.987688, 0.133071, -0.0822425]
+ [0.963861, 0.266405, 0.0]       
+ [0.912982, 0.399607, -0.0823236]</code></pre><p>At the moment user needs to take the derivtive of the potential himself as there are so many ways to do that. It is also possible that user might wish to calculate the field due to the surface current for whic normalderivatives method could be useful.</p><p>Now we can proceed with calculation. To calculate surface potential everywhere on the surface one executes a method</p><pre><code class="language-julia">ψ = surfacepotential(vertices,n,faces,ϵ,ψ0);</code></pre><pre><code class="language-none">642-element Array{Float64,1}:
   2.653434501398542e-18 
   8.606642991575556e-19 
   2.2344923010219443e-19
@@ -57,7 +75,7 @@ freefield(x) = H0</code></pre><pre><code class="language-none">freefield (generi
   0.014597289655776986  
  -0.01459344178082001   
  -7.468630218630511e-19 
- -0.014597289655776982  </code></pre><p>which solves a regularized boundary integral equation. And gives the potential on the surface. That then allows to obtain solution everywhere on the space very easally except near the boundary.</p><p>The library offers also to recalculate the pontential gradient on the surface which is needed for example to calculate the surface force due to <span>$(M \cdot \nabla)H$</span>.</p><p>The tnagential derivatives can be easally claculated from the potential by a finite differences which can be executed.</p><pre><code class="language-julia">P∇ψ = tangentderivatives(vertices,n,faces,ψ)</code></pre><pre><code class="language-none">642-element Array{GeometryTypes.Point{3,Float64},1}:
+ -0.014597289655776982  </code></pre><p>which solves a regularized boundary integral equation with BLAS. That can then for example then can be used to calculate energy of the field.</p><p>Usually, however, one wants to know the field on the surface for force calculations due to <span>$(M \cdot \nabla)H$</span>. The library offers to use the calculated pontential for calculating tangential field components by a finite differences. That cna be easally achieved with method <code>tangentderivatives</code>:</p><pre><code class="language-julia">P∇ψ = tangentderivatives(vertices,n,faces,ψ);</code></pre><pre><code class="language-none">642-element Array{GeometryTypes.Point{3,Float64},1}:
  [-6.16358e-17, -3.8093e-17, 0.177355]
  [-1.46449e-16, 9.05107e-17, 0.177355]
  [-4.37902e-17, 2.70638e-17, 0.177355]
@@ -77,7 +95,7 @@ freefield(x) = H0</code></pre><pre><code class="language-none">freefield (generi
  [-0.0133089, -0.00586792, 0.176082]  
  [0.0144029, 0.0018833, 0.176018]     
  [-1.70259e-17, 6.16003e-17, 0.177351]
- [0.0133089, 0.00586792, 0.176082]    </code></pre><p>The normal derivatives are calculated from Biot-Savarat law treating tangential field as raising from a surface current.</p><pre><code class="language-julia">n∇ψ = normalderivatives(vertices,n,faces,P∇ψ,ϵ,freefield)</code></pre><pre><code class="language-none">642-element Array{Float64,1}:
+ [0.0133089, 0.00586792, 0.176082]    </code></pre><p>And lastly to calculate the normal derivatives we can use Biot-Savarat law treating tangential field as raising from a surface current:</p><pre><code class="language-julia">n∇ψ = normalderivatives(vertices,n,faces,P∇ψ,ϵ,∇ψ0);</code></pre><pre><code class="language-none">642-element Array{Float64,1}:
   7.04586822141702e-17  
  -4.452001408767841e-17 
  -2.5156383743577904e-17
@@ -97,44 +115,26 @@ freefield(x) = H0</code></pre><pre><code class="language-none">freefield (generi
   0.014574843900638276  
  -0.014505718232074848  
  -5.0471373961479147e-17
- -0.014574843900638214  </code></pre><h2><a class="nav-anchor" id="Comparission-1" href="#Comparission-1">Comparission</a></h2><p>Since normals are the same as vertices for the nit spehre we expect normal field and potential to be the same. As can be seen from the results they indeed are:</p><pre><code class="language-julia">Hin = EllipsoidField(1,1,1,ϵ,H0)
+ -0.014574843900638214  </code></pre><p>To compare it is usefull to use the azimuthal symetry we have in the <span>$z$</span> direction. Also the normal field is equal to potential since vertex positions coincide with normals. And so the comparisson:</p><pre><code class="language-julia">Hin = EllipsoidField(1,1,1,ϵ,H0)
 
 x = [v[3] for v in vertices]
 sp = sortperm(x)
 
-for xkey in sp[1:20:end]
+for xkey in sp[2:43:end]
     psit = dot(Hin,vertices[xkey])
     println(&quot;$(vertices[xkey][3]) \t $psit \t $(ψ[xkey]) \t $(n∇ψ[xkey])&quot;)
-end</code></pre><pre><code class="language-none">-1.0 	 -0.17647517716731942 	 -0.17717189282425694 	 -0.17690820491248163
--0.924304600611346 	 -0.1631168181494557 	 -0.16376220910372155 	 -0.16346630966724968
--0.8649293358632748 	 -0.15263855778368335 	 -0.15324065900681064 	 -0.15287738583542856
--0.8090169943749475 	 -0.14277141741369112 	 -0.14333507222040046 	 -0.14312174421856277
--0.7586523001632574 	 -0.13388329907970523 	 -0.1344123581935596 	 -0.13423752652666626
--0.702046444776163 	 -0.12389377072156009 	 -0.12437278331905789 	 -0.12418751592818525
--0.620239582613447 	 -0.10945689022789232 	 -0.10988474850928386 	 -0.10975262089128036
--0.5712516591357086 	 -0.10081173775309935 	 -0.10121061129886728 	 -0.10102773538987558
--0.5133754412304479 	 -0.09059802194449407 	 -0.09094547561801297 	 -0.09069240178206486
--0.4338885645526948 	 -0.07657056130031073 	 -0.07686660736660371 	 -0.0767521058220372
--0.3750385674782097 	 -0.06618499764029473 	 -0.06644581229501077 	 -0.06640159522589188
--0.30125887909323207 	 -0.05316471406120619 	 -0.05337415046060851 	 -0.05331508627866831
--0.2598919130077544 	 -0.04586447139239702 	 -0.04605938273701051 	 -0.04596918025886762
--0.16245984811645317 	 -0.028670130478926876 	 -0.0288099470257459 	 -0.02873712859252809
--0.13279247682790243 	 -0.023434575874691242 	 -0.02352355894336828 	 -0.023486999179261697
--0.08114185161993964 	 -0.014319522640313193 	 -0.01438351622337078 	 -0.014356536563115621
-0.0 	 0.0 	 3.671530781244094e-18 	 4.6819769267013947e-17
-0.08108629344330352 	 0.01430971800124824 	 0.014381050442757755 	 0.014330146478530833
-0.1316553713520646 	 0.02323390498438483 	 0.023331353387787985 	 0.02333408052060141
-0.16245984811645317 	 0.028670130478926876 	 0.028809947025745897 	 0.028737128592528048
-0.2598919130077544 	 0.04586447139239702 	 0.04605938273701045 	 0.04596918025886754
-0.30125887909323207 	 0.05316471406120619 	 0.053374150460608435 	 0.053315086278668225
-0.3750385674782097 	 0.06618499764029473 	 0.06644581229501083 	 0.06640159522589191
-0.42532540417601994 	 0.07505937605572485 	 0.07532873464065233 	 0.07521235817543043
-0.5 	 0.08823758858365971 	 0.0885859464121283 	 0.08845410245624052
-0.5642542117657715 	 0.09957686198877069 	 0.09996709676891057 	 0.09970015069338366
-0.6156420208736806 	 0.10864553470532934 	 0.1090889861673993 	 0.10881356703605724
-0.6937804775604491 	 0.12243503269270774 	 0.12292599010361428 	 0.12272128608090505
+end</code></pre><pre><code class="language-none">-0.9904388819568619 	 -0.17478787716673896 	 -0.17547812860197168 	 -0.17527596928348008
+-0.8626684804161862 	 -0.15223957291810866 	 -0.1528390473513706 	 -0.15259803176313602
+-0.7071067811865475 	 -0.12478679448610892 	 -0.12528225109358154 	 -0.12509420513088565
+-0.6015009550075456 	 -0.10614998760126844 	 -0.10658154929292293 	 -0.1063437682264094
+-0.4539904997395468 	 -0.0801180538738164 	 -0.08043043818581964 	 -0.08024964268345765
+-0.30901699437494745 	 -0.0545338288300314 	 -0.054749125808272084 	 -0.054667641762322236
+-0.16245984811645317 	 -0.028670130478926876 	 -0.02880994702574589 	 -0.028737128592528006
+-0.08108629344330352 	 -0.01430971800124824 	 -0.014381050442757769 	 -0.014330146478530984
+0.0822424652793623 	 0.014513753630852578 	 0.014593441780820003 	 0.014505718232074815
+0.2201170274732924 	 0.038845191420892995 	 0.038990634237237747 	 0.03895854971555263
+0.35822879348657893 	 0.0632184897969791 	 0.06345968851389137 	 0.06327240001131593
+0.48444164206066787 	 0.0854919246098835 	 0.08581995775709064 	 0.0856269029700299
+0.6156420208736806 	 0.10864553470532934 	 0.10908898616739926 	 0.1088135670360572
 0.7579354200477765 	 0.13375678753431802 	 0.13430149412697107 	 0.13405923202953707
-0.7926492292592814 	 0.13988291316507087 	 0.14043085571593356 	 0.14013222914664808
-0.8626684804161862 	 0.15223957291810866 	 0.1528390473513704 	 0.15259803176313563
-0.924304600611346 	 0.1631168181494557 	 0.1637622091037214 	 0.16346630966724932
-0.9904388819568619 	 0.17478787716673896 	 0.17547812860197168 	 0.1752759692834799</code></pre><footer><hr/><a class="previous" href="../"><span class="direction">Previous</span><span class="title">Theory and introduction</span></a><a class="next" href="../pointlike/"><span class="direction">Next</span><span class="title">Sphere in a point charge field.</span></a></footer></article></body></html>
+0.8649293358632748 	 0.15263855778368335 	 0.15324065900681055 	 0.15287738583542848</code></pre><footer><hr/><a class="previous" href="../"><span class="direction">Previous</span><span class="title">Theory and introduction</span></a><a class="next" href="../pointlike/"><span class="direction">Next</span><span class="title">Sphere in a point charge field.</span></a></footer></article></body></html>
