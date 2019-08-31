@@ -1,6 +1,6 @@
-# # Sphere in a point charge field.
+# # A sphere in a point charge field.
 
-# In general the LaplaceBIE allows to find field on the object if the potential in absence of object(s) is known. To demonstrate that let's consider a field on the dielectric sphere (radius $r_1$) due to a point charge at distance $\zeta$ away. The solution inside the sphere is given as series [Straton page 221]:
+# In general, the LaplaceBIE allows finding the field on the body's surface if the potential in the absence of an object(s) is known. (Though one can not add objects one by one to get the solution directly. One, however, should be able to make an iterative scheme in the lines of multipole method.) To demonstrate that, let's consider a field on the dielectric sphere (radius r1) due to a point charge at distance ζ away. The solution inside the sphere is given as series [Straton page 221]:
 # ```math
 # \psi = \sum_{n=0}^{\infty} \frac{2n + 1}{\epsilon n + n + 1} \frac{r_1^n}{\zeta^{n+1}} L_n(\cos \theta)
 # ```
@@ -15,7 +15,7 @@ function ψt(cosθ,ϵ,ζ,r1)
     return s
 end
 
-# The normal derivative can also be given for the sphere which coincides with derivative in the radial direction
+# The normal derivative can also be given for the sphere which coincides with derivative in the radial direction:
 # ```math
 # \frac{\partial \psi}{\partial n} = \sum_{n=0}^{\infty} \frac{n(2n + 1)}{\epsilon n + n + 1} \frac{r_1^{n-1}}{\zeta^{n+1}} L_n(\cos \theta)
 # ```
@@ -27,7 +27,7 @@ function ∇ψn(cosθ,ϵ,ζ,r1)
     return s
 end
 
-# First we can define the exterior potential in absence of objects
+# First, we can define the exterior potential in the absence of objects:
 using LinearAlgebra
 
 ζ = 1.2
@@ -37,7 +37,8 @@ y = [0,0,ζ]
 ψ0(x) = 1/norm(x.-y)
 ∇ψ0(x) = -(x.-y)/norm(x.-y)^3
 
-# Let's now place a sphere in the field with relative permitivity $\epsilon=10$.
+# Let's now place a sphere in the field with relative permittivity $\epsilon=10$.
+
 ϵ = 10
 
 include("sphere.jl")
@@ -45,7 +46,7 @@ msh = unitsphere(2)
 vertices, faces = msh.vertices, msh.faces
 n = vertices
 
-# With LaplaceBIE to calculate the surface field we execute theese three lines:
+# With LaplaceBIE to calculate the surface field, we execute these three lines:
 
 using LaplaceBIE
 
@@ -53,7 +54,7 @@ using LaplaceBIE
 P∇ψ = tangentderivatives(vertices,n,faces,ψ);
 n∇ψ = normalderivatives(vertices,n,faces,P∇ψ,ϵ,∇ψ0);
 
-# Now to compare with analytics we use azimuthal symetry which in numerics was choosem as x axis. 
+# Now to compare with analytics, we use azimuthal symmetry, which in numerics was chosen as the x-axis:
 
 using Winston
 
