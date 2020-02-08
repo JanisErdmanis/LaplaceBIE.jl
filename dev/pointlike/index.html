@@ -49,26 +49,26 @@ n = vertices</code></pre><pre><code class="language-none">162-element Array{Geom
 ψ = surfacepotential(vertices,n,faces,ϵ,ψ0);
 P∇ψ = tangentderivatives(vertices,n,faces,ψ);
 n∇ψ = normalderivatives(vertices,n,faces,P∇ψ,ϵ,∇ψ0);</code></pre><pre><code class="language-none">162-element Array{Float64,1}:
- -0.062055341221873984
- -0.06205534122187394 
- -0.0620553412218738  
- -0.062055341221873526
-  0.0915452938808116  
-  0.09154529388081106 
- -0.06365584711404174 
- -0.06365584711404115 
- -0.06367958215679814 
- -0.046116943517335696
+ -0.06205534122187404 
+ -0.06205534122187409 
+ -0.062055341221873776
+ -0.0620553412218737  
+  0.09154529388081165 
+  0.09154529388081104 
+ -0.06365584711404176 
+ -0.06365584711404139 
+ -0.06367958215679825 
+ -0.04611694351733581 
   ⋮                   
- -0.06373122123157451 
- -0.06363392295695916 
- -0.0636339229569591  
- -0.05852127628110101 
- -0.06092044651491295 
- -0.06376068401697484 
- -0.06308197836685228 
+ -0.06373122123157463 
+ -0.06363392295695919 
+ -0.06363392295695924 
+ -0.058521276281101015
+ -0.06092044651491289 
+ -0.06376068401697485 
+ -0.06308197836685234 
  -0.06102685443985198 
- -0.06187692442427106 </code></pre><p>Now to compare with analytics, we use azimuthal symmetry, which in numerics was chosen as the x-axis:</p><pre><code class="language-julia">using Winston
+ -0.061876924424271076</code></pre><p>Now to compare with analytics, we use azimuthal symmetry, which in numerics was chosen as the x-axis:</p><pre><code class="language-julia">using Winston
 
 cosθ = range(-1,1,length=100)
 cosθs = [x[3]/1 for x in vertices]</code></pre><pre><code class="language-none">162-element Array{Float64,1}:
